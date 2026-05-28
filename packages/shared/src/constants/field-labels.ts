@@ -154,6 +154,13 @@ export const LABEL_PATTERNS: Record<FieldType, RegExp[]> = {
     /when\s*(can|could)\s*you\s*(start|join)/i,
     /joining\s*(notice|period)/i,
     /^notice$/i,
+    // Availability / start date variants
+    /what\s*is\s*your\s*availability/i,
+    /potential\s*start\s*date/i,
+    /earliest\s*(start|joining)\s*date/i,
+    /available\s*(to\s*start|from|date)/i,
+    /^availability$/i,
+    /start\s*date/i,
   ],
   [FieldType.WORK_AUTHORIZATION]: [
     /work\s*authoriz/i,

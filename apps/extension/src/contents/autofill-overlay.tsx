@@ -44,11 +44,12 @@ interface FieldProposal {
   source: "profile" | "ai" | "empty";
 }
 
-// File inputs and unknown fields we can't fill
-const SKIP_TYPES = new Set<FieldType>([
+// Only truly skip file-upload fields — everything else (including UNKNOWN)
+// is passed to AI which can answer from resume/profile context.
+// UNKNOWN fields with no label text are excluded (nothing for AI to work with).
+const FILE_UPLOAD_TYPES = new Set<FieldType>([
   FieldType.RESUME,
   FieldType.COVER_LETTER,
-  FieldType.UNKNOWN,
 ]);
 
 /**
@@ -127,9 +128,15 @@ function AutofillOverlay() {
           return;
         }
         const discovered = adapter.discoverFields(formRoot);
-        // Exclude file inputs and totally invisible elements
+        // Keep everything except:
+        // 1. File upload inputs (resume/cover letter uploads)
+        // 2. UNKNOWN fields with no label — AI has nothing to work with
         const fillable = discovered.filter(
-          (f) => f.inputType !== "file" && !SKIP_TYPES.has(f.fieldType as FieldType),
+          (f) =>
+            f.inputType !== "file" &&
+            !FILE_UPLOAD_TYPES.has(f.fieldType as FieldType) &&
+            // For UNKNOWN: only include if there's a label for AI to read
+            (f.fieldType !== FieldType.UNKNOWN || Boolean(f.labelText?.trim())),
         );
         setAllFields(fillable);
         setStatus(fillable.length > 0 ? "ready" : "idle");

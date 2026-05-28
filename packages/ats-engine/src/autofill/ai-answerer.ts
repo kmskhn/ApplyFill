@@ -162,11 +162,15 @@ Use the applicant's profile data AND resume to determine the best answer for eac
 
 RULES:
 - For fields like Name, Email, Phone, Nationality, Country, City — use the profile data directly
+- For LinkedIn/GitHub/Portfolio URL fields — use the URLs from the profile
 - For dropdown/select fields: you MUST pick EXACTLY one of the provided options (closest match to profile/resume)
 - For radio fields: pick EXACTLY one of the provided options
-- For open-ended questions: write a concise, professional answer (2-4 sentences) based on the resume
-- For Yes/No questions: answer based on the resume (e.g. skill questions)
-- SKIP fields you have no relevant information for (omit from JSON)
+- For motivation/interest questions ("why do you want to join", "why are you interested", "what excites you") — write 2-3 concise professional sentences using the company name from the job page and the applicant's skills from the resume
+- For availability/start date questions — use the Notice Period from profile if set, otherwise answer "Immediately"
+- For consent/agreement/opt-in questions ("do you agree", "consent to receive", "I agree to", "check yes or no") — always answer "Yes"
+- For skill/expertise questions ("are you expert in X", "experience with Y") — answer Yes or No based on the resume
+- For general open-ended questions — write a concise professional 2-3 sentence answer from the resume
+- SKIP fields where you truly have NO information (omit from JSON entirely)
 - Respond ONLY with a valid JSON object: {"Field Label": "answer value", ...}
 - Do not include any explanation or markdown outside the JSON
 
