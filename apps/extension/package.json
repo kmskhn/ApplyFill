@@ -1,0 +1,54 @@
+{
+  "name": "@applyfill/extension",
+  "displayName": "ApplyFill",
+  "version": "0.1.0",
+  "description": "One-click autofill for job application forms on Greenhouse, Lever, and more.",
+  "private": true,
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@applyfill/ats-engine": "workspace:*",
+    "@applyfill/shared": "workspace:*",
+    "@applyfill/ui": "workspace:*",
+    "@plasmohq/storage": "^1.13.0",
+    "plasmo": "^0.90.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.300",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.8.0"
+  },
+  "manifest": {
+    "permissions": [
+      "storage"
+    ],
+    "host_permissions": [
+      "https://*/*",
+      "http://*/*",
+      "https://generativelanguage.googleapis.com/*"
+    ],
+    "commands": {
+      "_execute_action": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+Y"
+        }
+      },
+      "trigger-autofill": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+F",
+          "mac": "Command+Shift+F"
+        },
+        "description": "Trigger autofill on the current page"
+      }
+    }
+  }
+}

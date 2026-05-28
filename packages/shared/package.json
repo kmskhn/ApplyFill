@@ -1,0 +1,22 @@
+{
+  "name": "@applyfill/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types/index.ts",
+    "./constants": "./src/constants/index.ts"
+  },
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "dependencies": {
+    "zod": "3.24.2"
+  }
+}

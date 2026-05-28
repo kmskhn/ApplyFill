@@ -1,0 +1,10 @@
+{
+  "name": "@applyfill/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Web app is not yet implemented. See Phase 4+ in the implementation plan.'",
+    "build": "echo 'Web app is not yet implemented.'",
+    "lint": "echo 'Web app is not yet implemented.'"
+  }
+}

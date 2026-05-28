@@ -1,0 +1,373 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   ApplyFill Design System
+   ============================================ */
+
+:root {
+  /* Brand colors */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+
+  /* Surface colors — dark theme */
+  --color-surface-0: #0a0a0f;
+  --color-surface-50: #111118;
+  --color-surface-100: #18181f;
+  --color-surface-200: #222230;
+  --color-surface-300: #2e2e3d;
+  --color-surface-400: #3f3f50;
+
+  /* Text colors */
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #a0a0b8;
+  --color-text-muted: #6b6b80;
+
+  /* Status colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+body {
+  margin: 0;
+  background: var(--color-surface-0);
+  color: var(--color-text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================
+   Popup Container
+   ============================================ */
+
+.af-popup {
+  width: 380px;
+  max-height: 580px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-300) transparent;
+}
+
+.af-popup-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, var(--color-brand-700) 0%, var(--color-brand-900) 100%);
+  border-bottom: 1px solid var(--color-brand-600);
+}
+
+.af-popup-logo {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.af-popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+}
+
+.af-popup-subtitle {
+  font-size: 11px;
+  color: var(--color-brand-200);
+  margin-top: 1px;
+}
+
+.af-popup-body {
+  padding: 12px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+
+.af-card {
+  background: var(--color-surface-100);
+  border: 1px solid var(--color-surface-300);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.af-card:hover {
+  border-color: var(--color-surface-400);
+}
+
+.af-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--color-surface-50);
+  border-bottom: 1px solid var(--color-surface-300);
+  user-select: none;
+}
+
+.af-card-header-collapsible {
+  cursor: pointer;
+}
+
+.af-card-header-collapsible:hover {
+  background: var(--color-surface-100);
+}
+
+.af-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.af-card-chevron {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.af-card-chevron-open {
+  transform: rotate(90deg);
+}
+
+.af-card-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================
+   Form Inputs
+   ============================================ */
+
+.af-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.af-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.2px;
+}
+
+.af-input,
+.af-select {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--color-surface-200);
+  border: 1px solid var(--color-surface-300);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.af-input:focus,
+.af-select:focus {
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.af-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.af-input-error {
+  border-color: var(--color-error);
+}
+
+.af-error-text {
+  font-size: 11px;
+  color: var(--color-error);
+}
+
+/* Input row — two inputs side by side */
+.af-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.af-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.af-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.af-btn-primary {
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  color: white;
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
+}
+
+.af-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-500) 100%);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.af-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.af-btn-secondary {
+  background: var(--color-surface-200);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-surface-300);
+}
+
+.af-btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-300);
+}
+
+.af-btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.af-btn-ghost:hover:not(:disabled) {
+  background: var(--color-surface-200);
+  color: var(--color-text-primary);
+}
+
+.af-btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.af-btn-md {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.af-btn-lg {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* ============================================
+   Status Badge
+   ============================================ */
+
+.af-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.af-status-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.af-status-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.af-status-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.af-status-info {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-brand-400);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* ============================================
+   Saved indicator animation
+   ============================================ */
+
+.af-saved-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-success);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.af-saved-indicator-visible {
+  opacity: 1;
+}
+
+/* ============================================
+   Scrollbar
+   ============================================ */
+
+.af-popup::-webkit-scrollbar {
+  width: 5px;
+}
+
+.af-popup::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.af-popup::-webkit-scrollbar-thumb {
+  background: var(--color-surface-300);
+  border-radius: 3px;
+}
+
+.af-popup::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-400);
+}

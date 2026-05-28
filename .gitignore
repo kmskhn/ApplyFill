@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Plasmo build output & cache
+.plasmo/
+apps/extension/.plasmo/

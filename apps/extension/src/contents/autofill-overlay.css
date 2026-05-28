@@ -1,0 +1,415 @@
+/* ============================================
+   Autofill Overlay — Content Script UI
+   Rendered in Shadow DOM, isolated from host page styles.
+   ============================================ */
+
+/* The overlay widget */
+.af-overlay {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647; /* max z-index */
+  width: 290px;
+  background: #111118;
+  border: 1px solid #2e2e3d;
+  border-radius: 14px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  color: #f0f0f5;
+  overflow: hidden;
+  animation: af-slide-in 0.3s ease-out;
+}
+
+@keyframes af-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.af-overlay-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.af-overlay-logo {
+  font-size: 16px;
+}
+
+.af-overlay-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.2px;
+}
+
+.af-overlay-minimize {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.af-overlay-minimize:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.af-overlay-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Status messages */
+.af-overlay-status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.af-overlay-status-info {
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.af-overlay-status-ready {
+  background: rgba(99, 102, 241, 0.1);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.af-overlay-status-done {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.af-overlay-status-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.af-overlay-warning {
+  color: #f59e0b;
+}
+
+/* Fill button */
+.af-overlay-fill-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.af-overlay-fill-btn:hover {
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.af-overlay-fill-btn:active {
+  transform: translateY(0);
+}
+
+/* Minimized FAB */
+.af-overlay-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  border: 2px solid rgba(99, 102, 241, 0.4);
+  border-radius: 50%;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 16px rgba(99, 102, 241, 0.4),
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+  transition: all 0.2s ease;
+  animation: af-fab-in 0.3s ease-out;
+}
+
+@keyframes af-fab-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.af-overlay-fab:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 6px 24px rgba(99, 102, 241, 0.5),
+    0 0 0 6px rgba(99, 102, 241, 0.15);
+}
+
+/* ── Custom field badge ───────────────────── */
+.af-overlay-custom-badge {
+  color: #f59e0b;
+  font-size: 11px;
+}
+
+/* ── Custom field prompt ─────────────────── */
+.af-overlay-custom-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.af-overlay-prompt-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a5b4fc;
+  padding: 6px 8px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 6px;
+}
+
+.af-overlay-prompt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.af-overlay-prompt-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.af-overlay-prompt-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a0a0b8;
+  line-height: 1.3;
+}
+
+.af-overlay-prompt-input {
+  width: 100%;
+  padding: 6px 8px;
+  background: #1a1a28;
+  border: 1px solid #2e2e3d;
+  border-radius: 6px;
+  color: #e0e0f0;
+  font-size: 12px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.af-overlay-prompt-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.af-overlay-prompt-hint {
+  font-size: 10px;
+  color: #6b6b8a;
+  font-style: italic;
+}
+
+.af-overlay-prompt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Skip button */
+.af-overlay-skip-btn {
+  width: 100%;
+  padding: 7px 16px;
+  background: transparent;
+  color: #6b6b8a;
+  border: 1px solid #2e2e3d;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.af-overlay-skip-btn:hover {
+  background: #1c1c28;
+  color: #a0a0b8;
+  border-color: #3e3e50;
+}
+
+
+/* ── AI status ───────────────────────────── */
+.af-overlay-status-ai {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(99, 102, 241, 0.08));
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.af-overlay-spinner {
+  display: inline-block;
+  animation: af-spin 1.2s linear infinite;
+}
+
+@keyframes af-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── AI badge on field labels ────────────── */
+.af-overlay-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 5px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.15));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #c084fc;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+}
+
+/* ── AI-generated input highlight ─────────── */
+.af-overlay-prompt-input-ai {
+  border-color: rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.af-overlay-prompt-input-ai:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.15);
+}
+
+/* ── Textarea override ───────────────────── */
+.af-overlay-prompt-textarea {
+  resize: vertical;
+  min-height: 44px;
+  line-height: 1.5;
+}
+
+/* ── Review screen ───────────────────────── */
+.af-overlay-review {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.af-overlay-review-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #1e1e2e;
+}
+
+.af-overlay-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.af-overlay-review-list::-webkit-scrollbar {
+  width: 3px;
+}
+.af-overlay-review-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.af-overlay-review-list::-webkit-scrollbar-thumb {
+  background: #3e3e50;
+  border-radius: 2px;
+}
+
+.af-overlay-review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.af-overlay-review-item-empty .af-overlay-review-label {
+  color: #4a4a62;
+}
+
+.af-overlay-review-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #8888a8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: capitalize;
+}
+
+.af-overlay-review-input {
+  width: 100%;
+  padding: 5px 8px;
+  background: #16161f;
+  border: 1px solid #23233a;
+  border-radius: 6px;
+  color: #e0e0f0;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.af-overlay-review-input:focus {
+  border-color: #6366f1;
+}
+
+.af-overlay-review-input::placeholder {
+  color: #3a3a52;
+  font-style: italic;
+}

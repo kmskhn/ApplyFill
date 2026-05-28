@@ -1,0 +1,312 @@
+@import "../style.css";
+
+/* Popup-specific overrides */
+.af-section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Tab bar ─────────────────────────────── */
+.af-tabs {
+  display: flex;
+  border-bottom: 1px solid #23233a;
+  background: #0e0e18;
+}
+
+.af-tab {
+  flex: 1;
+  padding: 9px 0;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #6b6b8a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  letter-spacing: 0.3px;
+}
+
+.af-tab:hover {
+  color: #a5b4fc;
+}
+
+.af-tab-active {
+  color: #818cf8;
+  box-shadow: inset 0 -2px 0 #6366f1;
+}
+
+/* ── Settings tab ────────────────────────── */
+.af-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.af-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.af-settings-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.af-settings-hint {
+  font-size: 11px;
+  color: #6b6b8a;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.af-settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.af-settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #16161f;
+  border: 1px solid #23233a;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.af-settings-toggle-row:hover {
+  background: #1c1c28;
+}
+
+.af-settings-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.af-settings-toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0f0;
+}
+
+.af-settings-toggle-url {
+  font-size: 11px;
+  color: #6b6b8a;
+}
+
+/* Toggle switch */
+.af-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.af-toggle-on {
+  background: #6366f1;
+}
+
+.af-toggle-off {
+  background: #2e2e3d;
+}
+
+.af-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: left 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.af-toggle-on .af-toggle-thumb {
+  left: 21px;
+}
+
+.af-toggle-off .af-toggle-thumb {
+  left: 3px;
+}
+
+/* ── Tab dot (active indicator) ─────────── */
+.af-tab {
+  position: relative;
+}
+
+.af-tab-dot {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.af-tab-dot-ai {
+  background: #a855f7;
+}
+
+/* ── Resume tab ──────────────────────────── */
+.af-resume-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.af-resume-ai-active {
+  padding: 8px 10px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 8px;
+  font-size: 11px;
+  color: #c084fc;
+  line-height: 1.4;
+}
+
+.af-resume-ai-inactive {
+  padding: 8px 10px;
+  background: rgba(107, 107, 138, 0.08);
+  border: 1px solid #23233a;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #6b6b8a;
+  line-height: 1.4;
+}
+
+.af-resume-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a0a0b8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.af-resume-hint-inline {
+  font-size: 10px;
+  font-weight: 400;
+  color: #6b6b8a;
+}
+
+.af-resume-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: #16161f;
+  border: 1px solid #23233a;
+  border-radius: 8px;
+  color: #e0e0f0;
+  font-size: 11px;
+  font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+  min-height: 200px;
+}
+
+.af-resume-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+.af-resume-textarea::placeholder {
+  color: #3a3a52;
+  white-space: pre-line;
+}
+
+.af-resume-footer {
+  font-size: 10px;
+  color: #6b6b8a;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── AI key section ──────────────────────── */
+.af-ai-key-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.af-ai-key-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a0a0b8;
+}
+
+.af-ai-key-row {
+  display: flex;
+  gap: 6px;
+}
+
+.af-ai-key-input {
+  flex: 1;
+  padding: 8px 10px;
+  background: #16161f;
+  border: 1px solid #23233a;
+  border-radius: 8px;
+  color: #e0e0f0;
+  font-size: 12px;
+  font-family: "JetBrains Mono", monospace;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.af-ai-key-input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.12);
+}
+
+.af-ai-key-toggle {
+  padding: 0 10px;
+  background: #16161f;
+  border: 1px solid #23233a;
+  border-radius: 8px;
+  color: #6b6b8a;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.af-ai-key-toggle:hover {
+  background: #1c1c28;
+  color: #a0a0b8;
+}
+
+.af-ai-key-hint {
+  font-size: 10px;
+  color: #6b6b8a;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.af-ai-key-link {
+  color: #a855f7;
+  text-decoration: none;
+}
+
+.af-ai-key-link:hover {
+  text-decoration: underline;
+}
+
+.af-ai-key-status {
+  color: #22c55e;
+}
