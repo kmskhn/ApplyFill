@@ -220,14 +220,16 @@ function resolveLabel(el: HTMLElement): string | null {
   if (ariaLabel?.trim()) return ariaLabel.trim().replace(/\s*\*\s*$/, "").trim();
 
   // Strategy 5: Shared field container
-  // Many modern form libraries (jisr.net uses [data-slot="field"], others use
-  // [role="group"], fieldset, .form-group, .field, etc.) put the label and
-  // input in the same container. Walk up to find such a container, then
-  // search within it for a <label> or <legend>.
   const containerLabel = findLabelInFieldContainer(el);
   if (containerLabel) return containerLabel;
 
-  // Strategy 6: Preceding sibling text
+  // Strategy 6: Preceding sibling label (Rippling, Lever, custom ATS forms)
+  // Pattern: a <p> or heading element is a sibling of the [data-testid="field"]
+  // container (or its ancestor), placed directly before it in the parent.
+  const siblingLabel = findPrecedingSiblingLabel(el);
+  if (siblingLabel) return siblingLabel;
+
+  // Strategy 7: Preceding sibling text (fallback)
   const parent = el.parentElement;
   if (parent) {
     const siblings = Array.from(parent.children);
@@ -254,6 +256,68 @@ function resolveLabel(el: HTMLElement): string | null {
 function resolveGroupLabel(group: HTMLElement): string | null {
   return findLabelInFieldContainer(group) ?? resolveLabel(group);
 }
+
+/**
+ * Strategy 5b: Rippling / custom ATS preceding-sibling label detection.
+ *
+ * Rippling (and other ATS like Lever v2) place the question text as a <p> or
+ * heading BEFORE the [data-testid="field"] container in a shared wrapper div:
+ *
+ *   <div class="marginY--36">                    ← shared wrapper
+ *     <div class="paddingX--16">                ← sibling 1 (contains the label)
+ *       <p>In 2-3 lines, summarize why you want to join Mozn?</p>
+ *     </div>
+ *     <div data-testid="field"> ... </div>       ← sibling 2 (field container)
+ *   </div>
+ *
+ * The label `<p>` can be directly inside the preceding sibling or nested.
+ * Walks up to 6 levels to find the [data-testid="field"] ancestor, then
+ * looks at the previous sibling of each ancestor within its parent.
+ */
+function findPrecedingSiblingLabel(el: HTMLElement): string | null {
+  // Field container markers — walk up to find one
+  const FIELD_CONTAINERS = [
+    '[data-testid="field"]',
+    '[data-slot="field"]',
+    'fieldset',
+    '[role="group"]',
+  ];
+
+  let current: HTMLElement | null = el.parentElement;
+  let depth = 0;
+
+  while (current && depth < 6) {
+    const isFieldContainer = FIELD_CONTAINERS.some((sel) => {
+      try { return current!.matches(sel); } catch { return false; }
+    });
+
+    if (isFieldContainer) {
+      // Look at siblings that come BEFORE this field container
+      const parent = current.parentElement;
+      if (parent) {
+        const siblings = Array.from(parent.children);
+        const containerIndex = siblings.indexOf(current);
+
+        // Search backwards through preceding siblings
+        for (let i = containerIndex - 1; i >= 0; i--) {
+          const sib = siblings[i] as HTMLElement;
+          // Look for <p>, <span>, heading, or any element with label-like text
+          const textEl = sib.querySelector("p, h1, h2, h3, h4, h5, h6, span") ?? sib;
+          const text = extractLabelText(textEl);
+          if (text && text.length > 2 && text.length < 300) {
+            return text;
+          }
+        }
+      }
+    }
+
+    current = current.parentElement;
+    depth++;
+  }
+
+  return null;
+}
+
 
 /**
  * Walks up the DOM tree looking for a "field container" element —
