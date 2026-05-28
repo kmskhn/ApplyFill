@@ -124,17 +124,29 @@ export function discoverFields(formRoot: Element) {
 
 /**
  * Checks if an element is visible to the user using multiple heuristics.
+ *
+ * NOTE: getBoundingClientRect() returns 0,0 for elements scrolled below the
+ * viewport, so we cannot use it as the primary check — it incorrectly discards
+ * valid form fields on long pages (Rippling custom question textareas, etc.).
+ * Computed style checks are viewport-independent and are used first.
  */
 function isVisible(el: HTMLElement): boolean {
-  // offsetParent is null for display:none elements (and position:fixed ancestors)
-  if (el.offsetParent === null) {
-    // Allow position:fixed elements (they don't have offsetParent but are visible)
-    const style = window.getComputedStyle(el);
-    if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
-      return false;
-    }
+  // Primary: computed style (viewport-independent)
+  const style = window.getComputedStyle(el);
+  if (style.display === "none") return false;
+  if (style.visibility === "hidden") return false;
+  if (style.opacity === "0") return false;
+
+  // Textareas, selects, and text inputs are always visible if their computed
+  // style doesn't hide them — trust that and skip rect check entirely.
+  const tag = el.tagName.toLowerCase();
+  if (tag === "textarea" || tag === "select") return true;
+  if (tag === "input") {
+    const type = (el as HTMLInputElement).type?.toLowerCase() ?? "text";
+    if (!["hidden", "submit", "reset", "image", "button"].includes(type)) return true;
   }
-  // Width/height check as a fallback
+
+  // For other elements (custom radio groups etc.), use rect as a final check
   const rect = el.getBoundingClientRect();
   if (rect.width === 0 && rect.height === 0) return false;
   return true;
