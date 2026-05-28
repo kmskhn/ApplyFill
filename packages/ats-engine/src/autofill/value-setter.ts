@@ -7,6 +7,7 @@
  * - Native <select> elements (fuzzy option matching)
  * - React Select / combobox inputs (type + click matching option)
  * - Radio button groups [role="radiogroup"] (click matching button)
+ * - Tesla TDS listbox (ul.tds-listbox / li[data-tds-value]) for phone country codes
  */
 
 /**
@@ -65,8 +66,14 @@ function setNativeInputValue(
   value: string,
 ): boolean {
   let fillValue = value;
+
   if (element instanceof HTMLInputElement && (element.type === "tel" || element.type === "text")) {
-    if (hasSiblingPhoneDialCodeSelect(element)) {
+    // Check for TDS-style listbox phone country code picker (Tesla, etc.)
+    const tdsCountryPicker = findTDSPhoneCountryPicker(element);
+    if (tdsCountryPicker) {
+      setTDSListboxValue(tdsCountryPicker, extractDialCode(value));
+      fillValue = extractLocalPhoneNumber(value);
+    } else if (hasSiblingPhoneDialCodeSelect(element)) {
       fillValue = extractLocalPhoneNumber(value);
     }
   }
@@ -256,6 +263,90 @@ function hasSiblingPhoneDialCodeSelect(el: HTMLElement): boolean {
 function extractLocalPhoneNumber(phone: string): string {
   const stripped = phone.replace(/^\+\d{1,3}[\s\-]?/, "").trim();
   return stripped || phone;
+}
+
+/**
+ * Extracts the dial code prefix from a phone number.
+ * e.g. "+91 98765 43210" → "+91"
+ */
+function extractDialCode(phone: string): string {
+  const match = phone.match(/^(\+\d{1,3})/);
+  return match?.[1] ?? "";
+}
+
+/**
+ * Finds the TDS-style listbox country code picker that is a sibling of a phone input.
+ * Tesla Design System renders phone country code as:
+ *   button.tds-dropdown-trigger > span "IN +91" (opens)
+ *   ul.tds-listbox > li[data-tds-value="IN"] (options)
+ *
+ * Returns the listbox element if found, null otherwise.
+ */
+function findTDSPhoneCountryPicker(el: HTMLElement): HTMLElement | null {
+  // Walk up to the phone input wrapper (up to 4 levels)
+  let node: HTMLElement | null = el.parentElement;
+  for (let i = 0; i < 4 && node; i++) {
+    // Look for a sibling .tds-dropdown-trigger that controls a listbox
+    const trigger = node.querySelector("button.tds-dropdown-trigger[aria-haspopup='listbox']");
+    if (trigger) {
+      // Found the TDS phone country picker container
+      const listbox = node.querySelector(".tds-listbox") as HTMLElement | null;
+      return listbox;
+    }
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/**
+ * Selects an option in a TDS listbox by clicking the matching li element.
+ *
+ * Matching priority:
+ * 1. li[data-tds-value] matches country code (e.g. "IN")
+ * 2. li text includes the dial code (e.g. "+91")
+ *
+ * @param listbox - The ul.tds-listbox element
+ * @param dialCode - The dial code string (e.g. "+91") or country code (e.g. "IN")
+ */
+function setTDSListboxValue(listbox: HTMLElement, dialCode: string): void {
+  if (!dialCode) return;
+
+  // First open the dropdown by clicking the trigger button
+  const container = listbox.closest("div");
+  const trigger = container?.querySelector(
+    "button.tds-dropdown-trigger",
+  ) as HTMLElement | null;
+
+  if (trigger) {
+    trigger.click();
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  }
+
+  setTimeout(() => {
+    const normalizedDial = dialCode.replace("+", "").trim();
+
+    const options = Array.from(
+      listbox.querySelectorAll("li.tds-listbox-option"),
+    ) as HTMLElement[];
+
+    // Match by data-tds-label (e.g. "IN +91") or by dial code in the text
+    for (const option of options) {
+      const label = (option.getAttribute("data-tds-label") ?? "").toLowerCase();
+      const value = (option.getAttribute("data-tds-value") ?? "").toLowerCase();
+      const text = (option.textContent ?? "").toLowerCase();
+
+      if (
+        label.includes(`+${normalizedDial}`) ||
+        text.includes(`+${normalizedDial}`) ||
+        value === normalizedDial.toLowerCase()
+      ) {
+        option.click();
+        option.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        option.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        return;
+      }
+    }
+  }, 300);
 }
 
 /**
