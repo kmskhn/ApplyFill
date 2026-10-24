@@ -138,3 +138,7 @@ Gotchas found on live pages (Oct 2026), each with a test in `test/`:
 - **Gemini and bad keys:** Gemini answers a bad key with 400 "API key not valid", not 401.
 
 Free model names are in `ai.js` (`MODELS`). If Google renames a model, edit the list. An unknown model is skipped for the day.
+
+## License
+
+MIT: see [LICENSE](LICENSE). Free to use, change and share.
