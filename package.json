@@ -1,21 +1,13 @@
 {
   "name": "applyfill",
+  "version": "0.1.0",
   "private": true,
+  "description": "ApplyFill: Chrome extension that fills job application forms from your profile, saved answers and resume. Never submits.",
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "test": "turbo test",
-    "format": "prettier --write \"**/*.{ts,tsx,json,css,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,json,css,md}\""
+    "test": "node --test test/test-*.js",
+    "check-secrets": "node scripts/check-secrets.js"
   },
   "devDependencies": {
-    "turbo": "^2.5.0",
-    "prettier": "^3.5.0",
-    "typescript": "^5.8.0"
-  },
-  "packageManager": "pnpm@10.12.1",
-  "engines": {
-    "node": ">=20.0.0"
+    "jsdom": "^30.1.3"
   }
 }

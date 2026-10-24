@@ -1,14 +1,14 @@
 node_modules/
-dist/
-build/
-.next/
-.turbo/
-*.tsbuildinfo
-.env
-.env.*
-!.env.example
 .DS_Store
 
-# Plasmo build output & cache
-.plasmo/
-apps/extension/.plasmo/
+# Never commit keys, resumes or backups (backups hold your profile and resume).
+.env
+.env.*
+*.pem
+*.key
+*.pdf
+*backup*.json
+
+# Packed builds
+*.zip
+*.crx

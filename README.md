@@ -1,238 +1,140 @@
-# ⚡ ApplyFill
+# ApplyFill
 
-> AI-powered Chrome extension that auto-fills job application forms in one click — using your profile data and resume.
+A Chrome extension that fills job application forms for you.
 
----
+On a job's apply page, a **⚡ Fill** button shows up. Click it (or press **Alt+Shift+F**) and the form is filled from:
 
-## What It Does
+1. **your profile**: name, email, links, work rights, salary, ...
+2. **answers you saved before**: the same question gets the same answer
+3. **free AI** (Google Gemini) for new questions, written from your resume
 
-ApplyFill sits as a floating button on any job application page. When you click **Fill Application**, it:
+You check the form and click Submit yourself. **ApplyFill never submits.**
 
-1. **Scans** all form fields on the page (inputs, dropdowns, radio buttons, React Select, custom components)
-2. **Analyzes** every field using AI (Gemini 2.0 Flash) with your full profile + resume text as context
-3. **Shows a review screen** with every proposed value — you can edit anything before committing
-4. **Fills** all fields at once, including tricky custom dropdowns and screening questions
+It's free: no account, no server, no card. Your data stays in your browser.
 
-Fields it handles automatically from your profile: name, email, phone, city, country, nationality, current title, current company, current salary, expected salary, notice period, LinkedIn, GitHub, work authorization, and more.
+## Colors
 
-Fields it answers from your resume via AI: open-ended screening questions, skill assessments (e.g. "Are you expert in X?"), years of experience in specific areas, cover letter prompts.
+| Color | Meaning |
+| --- | --- |
+| green | from your profile or a saved answer |
+| yellow | AI answer, or a legal question (sponsorship, work permit): check it |
+| red | yours to do: consent boxes, personal questions without a saved answer, other files, or a field it couldn't fill |
+| grey | you had already filled it: left as is |
 
----
+## Where it works
 
-## Tech Stack
+- **Best:** Ashby, Greenhouse and Lever forms, all tested on live job pages.
+- **Other sites:** fields with normal labels work. Custom widgets may need a hand.
+- **Not supported:** LinkedIn (see "Rules" below).
+- **Not tested:** Workday, and sites that make you log in or create an account first.
 
-| Layer | Technology |
-|---|---|
-| Extension framework | [Plasmo](https://www.plasmo.com/) |
-| UI | React + Shadow DOM (isolated CSS) |
-| Storage | `@plasmohq/storage` (Chrome local storage) |
-| AI | Google Gemini 2.0 Flash REST API |
-| Monorepo | pnpm workspaces + Turborepo |
-| Language | TypeScript (strict) |
-| Validation | Zod |
+## Install
 
----
+You need Google Chrome (or Edge, Brave, or another Chromium browser).
 
-## Project Structure
+1. Download this repo: **Code → Download ZIP** on GitHub, then unzip it. Or run `git clone https://github.com/kmskhn/ApplyFill.git`.
+2. Open `chrome://extensions` and turn on **Developer mode** (top right).
+3. Click **Load unpacked** and pick the folder that holds `manifest.json`.
+4. The ApplyFill settings page opens. Follow **Get started** there (next section).
 
-```
-applyfill/
-├── apps/
-│   ├── extension/          # Chrome extension (Plasmo)
-│   │   └── src/
-│   │       ├── popup/      # Extension popup (Profile, Settings, Resume tabs)
-│   │       ├── contents/   # Content scripts injected into web pages
-│   │       └── background/ # Service worker (Gemini API proxy)
-│   └── web/                # (Future) Landing page
-│
-└── packages/
-    ├── shared/             # Types, constants, profile schema (Zod)
-    │   └── src/
-    │       ├── types/      # UserProfile, FieldType, UserSettings
-    │       └── constants/  # Field label patterns, name→FieldType maps
-    │
-    ├── ats-engine/         # Form detection & autofill logic
-    │   └── src/
-    │       ├── detector/   # Discovers & classifies form fields
-    │       ├── matchers/   # Label text → FieldType classification
-    │       ├── autofill/   # Value filling, React Select, radio buttons, AI answerer
-    │       └── adapters/   # Per-platform form root detection (Greenhouse, Lever, Generic)
-    │
-    └── ui/                 # Shared React component library (Card, Input, etc.)
-```
+To open the settings later, click the ApplyFill icon in the toolbar (pin it from the puzzle-piece menu).
 
----
+## Set up (about 5 minutes)
 
-## Getting Started
+1. **Get a free Gemini key**
+   - Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey), sign in with a Google account, and click **Create API key**. No card is needed.
+   - Paste it on the **AI** tab, click **Save**, then **Test AI**.
+2. **Add your resume**
+   - **Resume** tab → **Upload PDF**. ApplyFill attaches this file to "Resume/CV" fields.
+   - Click **Read text from PDF with AI**. It reads the text the AI writes answers from, and fills the empty fields on the Profile tab.
+3. **Check your profile**
+   - **Profile** tab: fix anything wrong and fill in the rest. The work-rights fields matter most: sponsorship, the countries you can already work in, salary and notice period.
+   - Click **Save**.
+4. **Apply**
+   - Open a job's apply page and click **⚡ Fill**.
+   - Check everything yellow and red, then submit yourself.
 
-### Prerequisites
+### About the free AI
 
-- Node.js 18+
-- pnpm 8+
-- Google Chrome
+- One Fill click makes **at most 1 AI request**, and only when a question has no profile answer and no saved answer.
+- Free Gemini allows about 20 requests a day per model, and ApplyFill moves through several models. For job applications, that's plenty.
+- When the free limit is used up, the panel says so. Fill the rest by hand, or try again the next day.
+- **OpenRouter** (optional, also free) is a fallback: add a key from [openrouter.ai/keys](https://openrouter.ai/keys) on the AI tab.
+- If you use Gemini for other apps, create the ApplyFill key in a **new project**: free limits are per project.
 
-### Install dependencies
+## It learns your answers
 
-```bash
-pnpm install
-```
-
-### Run in development mode
-
-```bash
-pnpm dev
-```
-
-This starts the Plasmo dev server with hot reload. Load the extension in Chrome:
-
-1. Open `chrome://extensions`
-2. Enable **Developer mode** (top right toggle)
-3. Click **Load unpacked**
-4. Select `apps/extension/.plasmo/chrome-mv3-dev` (created after first `pnpm dev`)
-
-### Build for production
-
-```bash
-pnpm build
-```
-
-Output is at `apps/extension/.plasmo/chrome-mv3-prod`.
-
----
-
-## Configuration
-
-### Profile Setup
-
-Click the extension icon → **Profile** tab. Fill in:
-
-| Section | Fields |
-|---|---|
-| **Personal** | First/Last Name, Email, Phone, City, Country, Nationality, Location |
-| **Professional** | Current Company, Current Title, Current Salary/CTC, Years of Experience, LinkedIn, GitHub, Portfolio |
-| **Preferences** | Expected Salary, Notice Period, Work Authorization, Visa Sponsorship |
-| **Demographics** | Gender, Ethnicity, Veteran Status, Disability Status (EEO fields) |
-
-### AI Setup (optional but recommended)
-
-1. Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com/app/apikey)
-2. Click the extension icon → **Settings** tab
-3. Paste your API key and enable AI
-4. Click the extension icon → **Resume** tab → paste your resume text
-
-With AI enabled, the extension answers open-ended screening questions (e.g. "Why do you want this role?", "Are you expert in Laravel?") using your resume.
-
----
-
-## How Field Detection Works
-
-The `ats-engine` uses a multi-signal classification pipeline:
-
-```
-HTML Element
-    │
-    ├─ Label text    → LABEL_PATTERNS regex match (confidence: 0.85–1.0)
-    ├─ name attr     → NAME_ATTRIBUTE_PATTERNS match (confidence: 0.80)
-    ├─ id attr       → Same as name patterns (confidence: 0.70)
-    ├─ type attr     → TYPE_ATTRIBUTE_MAP (confidence: 0.60)
-    ├─ placeholder   → Label text matching (confidence: 0.50)
-    └─ autocomplete  → Autocomplete value map (confidence: 0.60)
-        │
-        └─ → FieldType (FIRST_NAME, EMAIL, PHONE, SALARY_EXPECTATION, ...)
-```
-
-**Label resolution strategies** (in order of priority):
-1. `<label for="id">` — explicit association
-2. Ancestor `<label>` wrapping the input
-3. `aria-labelledby` reference
-4. `aria-label` attribute
-5. **Shared field container** — walks up to `[data-slot="field"]`, `[role="group"]`, `.form-group` etc. and finds a label within (handles modern design systems like Astralis/jisr.net)
-6. Preceding sibling text
-
-**Special element support:**
-- React Select / headless UI comboboxes (`input[role="combobox"]`) — types value then clicks matching option
-- Radix UI radio button groups (`[role="radiogroup"]`) — clicks the matching `[role="radio"]` button
-- Native `<select>` — fuzzy option matching (6 fallback strategies)
-
----
-
-## AI Integration
-
-When you click Fill Application with AI enabled:
-
-1. All detected fields are sent to Gemini 2.0 Flash in a single API call
-2. The prompt includes:
-   - Your full structured profile (name, nationality, salary, etc.)
-   - Your resume text
-   - The page URL/title for job context
-   - For select/radio fields: the actual available options
-3. Gemini returns values for every field it can answer
-4. Profile values take precedence over AI for factual fields (name, email, phone)
-5. AI fills open-ended questions, skill assessments, and fields not in your profile
-
-The Gemini API call is routed through the **background service worker** to avoid CORS restrictions in content scripts.
-
----
-
-## Supported ATS Platforms
-
-| Platform | Status |
-|---|---|
-| Greenhouse | ✅ Full support |
-| Lever | ✅ Full support |
-| Jisr (jisr.net) | ✅ Tested |
-| Generic (any site) | ✅ Best-effort |
-| Workday | 🔜 Planned |
-| SmartRecruiters | 🔜 Planned |
-
----
-
-## Development
-
-### Package scripts
-
-```bash
-pnpm dev          # Start all packages in watch mode
-pnpm build        # Build all packages
-pnpm lint         # Run ESLint across all packages
-pnpm typecheck    # Run tsc --noEmit across all packages
-```
-
-### Adding a new field type
-
-1. Add the enum value to `packages/shared/src/types/ats.ts` → `FieldType`
-2. Add label patterns to `packages/shared/src/constants/field-labels.ts` → `LABEL_PATTERNS`
-3. Add name/id patterns to `packages/shared/src/constants/field-labels.ts` → `NAME_ATTRIBUTE_PATTERNS`
-4. Map it to a profile value in `packages/shared/src/constants/field-map.ts` → `getProfileValue()`
-5. If it needs a new profile field, add it to the Zod schema in `packages/shared/src/types/profile.ts`
-
-### Adding a new ATS adapter
-
-Create `packages/ats-engine/src/adapters/myplatform.ts` implementing `ATSAdapter`:
-
-```typescript
-export const myPlatformAdapter: ATSAdapter = {
-  id: ATSPlatform.MY_PLATFORM,
-  name: "My Platform",
-  isApplicationPage: (doc) => /myplatform\.com\/jobs\/apply/.test(doc.URL),
-  getFormRoot: (doc) => doc.querySelector("form#application-form"),
-  discoverFields: (root) => discoverFields(root),
-};
-```
-
-Then register it in `packages/ats-engine/src/adapters/registry.ts`.
-
----
+- Change anything ApplyFill filled, then click **Save my answers** in the panel. Next time the same question fills from memory (green), with no AI.
+- Submitting a form after Fill also saves your answers.
+- Not saved:
+  - profile facts (change those in settings)
+  - consent boxes
+  - files
+- See, edit and delete saved answers on the **Saved answers** tab.
 
 ## Privacy
 
-- All data stays **local to your browser** (Chrome local storage)
-- Your profile and resume are **never sent to any server** except Gemini when answering AI fields
-- The Gemini API call includes only: field labels, your profile data, and resume text
-- No analytics, no tracking, no account required
+- Everything is stored only in your browser (`chrome.storage.local`): your profile, resume, saved answers and AI keys. There is no ApplyFill server.
+- **Backup** tab: export everything except your AI keys to one JSON file, and import it on another computer.
+- **Keep backup files private.** They hold your profile and resume.
+- Nothing leaves the browser until you click Fill.
+- When AI is needed, the AI gets:
+  - your profile **without** email, phone, address, nationality, date of birth, or personal (EEO) answers
+  - your resume text, with email addresses and phone numbers removed
+  - the job page text
+  - the questions
+- Google's free Gemini tier may use prompts to improve its products. If that matters to you, don't add a key: ApplyFill still fills everything from your profile and saved answers.
+- Exception: **Read text from PDF with AI** sends the whole PDF once, contact details included. To avoid that, paste your resume text yourself.
 
----
+## Rules it follows
 
-## License
+- **Never submits.** You always review and click Submit.
+- **No LinkedIn.** LinkedIn's terms forbid automation, so the extension doesn't run there.
+- **Personal questions never go to AI.** This covers gender, race, ethnicity, veteran status, disability, orientation, pronouns, religion, nationality, date of birth and criminal record.
+  - Answers come only from your profile or your saved answers. Otherwise the field is left for you (red).
+  - New profiles default to "Prefer not to say", which picks the site's decline option.
+- **Consent boxes are never ticked**: "I agree", "I certify", privacy, GDPR, marketing. Not even from saved answers.
+- **Legal yes/no questions come from your profile but show yellow.** These are sponsorship and right-to-work questions.
+  - "Authorized to work in X?" is Yes only for countries listed in "Countries you can already work in".
+  - A question that names no country is taken to mean the job's country. If you need sponsorship, the answer is "No".
+- **Resume first.** The resume is uploaded before anything else, so the site's own resume reader can't overwrite the answers. ApplyFill waits until the page stops changing.
+  - Ashby's "Autofill from resume" box is skipped.
+- **Free only.** It uses Gemini's free tier, then OpenRouter's free models. A model that hits its daily limit is skipped until the limit resets.
 
-MIT
+## Troubleshooting
+
+- **No Fill button.** The page may not look like a job form: it needs at least 4 fields and an email or file field, or a known job site. Press **Alt+Shift+F** instead. Also check "Hide the floating button" on the AI tab.
+- **A field shows "Could not fill".** Some custom widgets block scripts. Fill it by hand; with **Save my answers**, the next time is usually green.
+- **"AI key not accepted".** Copy the key again from AI Studio, then click **Save** and **Test AI**.
+- **After you update the code:** on `chrome://extensions`, click the reload icon on ApplyFill, then reload the job page.
+
+## For developers
+
+Plain JavaScript, Manifest V3, no build step: edit a file, then reload the extension.
+
+```
+npm install
+npm test               # jsdom tests against real Greenhouse and Lever form markup
+npm run check-secrets  # run before every commit: fails on API keys, PDFs, .env and backup files
+```
+
+| File | Job |
+| --- | --- |
+| `content/detect.js` | decides if a page is a job form, shows the button, handles the shortcut |
+| `content/scan.js` | reads fields: label, kind, options |
+| `content/match.js` | picks the answer and its source (rules, consent list, personal list) |
+| `content/memory.js` | saved answers |
+| `content/fill.js` | puts values in (React-safe, typed dropdowns, place search boxes, resume upload) |
+| `content/main.js` | one Fill click, start to end; "Save my answers" |
+| `content/panel.js` | floating button and panel (shadow DOM) |
+| `background.js`, `ai.js` | AI calls (Gemini, then OpenRouter) and checks of the AI's JSON |
+| `options/` | settings page |
+
+Gotchas found on live pages (Oct 2026), each with a test in `test/`:
+
+- **Greenhouse dropdowns (react-select):** they open only on keys typed one character at a time, or on ArrowDown. Setting the value plus one input event is not enough.
+- **Lever "Current location":** you must click a suggestion, or the box is cleared. ApplyFill types the city and picks the suggestion that names your country.
+- **Ashby Yes/No buttons:** each has a hidden checkbox next to it, which is not a question. The chosen button shows only after React re-renders.
+- **Gemini and bad keys:** Gemini answers a bad key with 400 "API key not valid", not 401.
+
+Free model names are in `ai.js` (`MODELS`). If Google renames a model, edit the list. An unknown model is skipped for the day.

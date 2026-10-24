@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ApplyFill settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>ApplyFill</h1>
+        <p class="muted">Fills job forms from this profile, your saved answers and your resume. It never submits.</p>
+      </div>
+      <div class="actions">
+        <span id="saved" class="muted" aria-live="polite"></span>
+        <button id="save" class="primary" type="button">Save</button>
+      </div>
+    </header>
+
+    <main>
+      <nav class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="profile" aria-selected="true">Profile</button>
+        <button type="button" role="tab" data-tab="resume">Resume</button>
+        <button type="button" role="tab" data-tab="ai">AI</button>
+        <button type="button" role="tab" data-tab="answers">Saved answers</button>
+        <button type="button" role="tab" data-tab="backup">Backup</button>
+      </nav>
+
+      <section id="tab-profile" class="tab">
+        <div class="card">
+          <strong>Get started</strong>
+          <ol class="steps">
+            <li><a href="#" data-go="ai">AI tab</a>: add a free Gemini key.</li>
+            <li><a href="#" data-go="resume">Resume tab</a>: upload your PDF, then click "Read text from PDF with AI". It also fills the empty fields below.</li>
+            <li>Check this page, fill in the rest, and click <strong>Save</strong>.</li>
+            <li>Open a job's apply page and click <strong>⚡ Fill</strong> (or press Alt+Shift+F).</li>
+          </ol>
+        </div>
+        <form id="profile" autocomplete="off"></form>
+      </section>
+
+      <section id="tab-resume" class="tab" hidden>
+        <div class="card">
+          <h2>Resume PDF</h2>
+          <p class="muted">Uploaded to "Resume/CV" fields. Stored only in this browser.</p>
+          <div class="row">
+            <span id="resume-name" class="muted">No resume yet.</span>
+            <label class="button">Upload PDF<input id="resume-file" type="file" accept="application/pdf,.pdf" hidden /></label>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Resume text</h2>
+          <p class="muted">The AI writes answers from this text. Email and phone numbers are removed before it is sent.</p>
+          <div class="row">
+            <button id="read-resume" type="button">Read text from PDF with AI</button>
+            <span class="muted small">1 Gemini request. It sends the whole PDF once (with your contact details), or paste the text yourself.</span>
+          </div>
+          <textarea id="resume-text" rows="18" placeholder="Paste your resume text here, or use the button above."></textarea>
+        </div>
+      </section>
+
+      <section id="tab-ai" class="tab" hidden>
+        <div class="card">
+          <h2>Gemini key (free)</h2>
+          <p class="muted">
+            Get one at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a>. No card needed.
+            If you already use Gemini for other apps, create the key in a <strong>new project</strong>: free limits are per project.
+          </p>
+          <input id="gemini-key" type="password" placeholder="AIza…" autocomplete="off" />
+        </div>
+        <div class="card">
+          <h2>OpenRouter key (optional fallback)</h2>
+          <p class="muted">Free models, about 50 requests a day per account (shared by all your apps on that account). Get one at <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a>.</p>
+          <input id="openrouter-key" type="password" placeholder="sk-or-…" autocomplete="off" />
+        </div>
+        <div class="card row">
+          <button id="ai-test" type="button">Test AI (1 request)</button>
+          <span id="ai-result" class="muted"></span>
+        </div>
+        <div class="card">
+          <h2>Today</h2>
+          <p id="ai-usage" class="muted"></p>
+          <p class="muted small">What the AI gets: your profile without email, phone, address and personal (EEO) answers; your resume text with email and phone removed; the job page text; and the questions. Free Gemini may use prompts to improve Google's products.</p>
+        </div>
+        <div class="card row">
+          <label class="check"><input id="button-hidden" type="checkbox" /> Hide the floating button (the shortcut Alt+Shift+F still works)</label>
+        </div>
+      </section>
+
+      <section id="tab-answers" class="tab" hidden>
+        <div class="card">
+          <h2>Saved answers</h2>
+          <p class="muted">Saved with "Save my answers" on a form, or when you submit a form after Fill. Edit or delete here.</p>
+          <input id="answers-filter" type="search" placeholder="Search questions…" />
+          <div id="answers"></div>
+        </div>
+      </section>
+
+      <section id="tab-backup" class="tab" hidden>
+        <div class="card">
+          <h2>Backup</h2>
+          <p class="muted">Profile, resume and saved answers in one JSON file. AI keys are not included.</p>
+          <div class="row">
+            <button id="export" type="button">Export backup</button>
+            <label class="button">Import backup<input id="import-backup" type="file" accept=".json,application/json" hidden /></label>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>
