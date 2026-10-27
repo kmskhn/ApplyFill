@@ -1,6 +1,6 @@
 {
   "name": "applyfill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "ApplyFill: Chrome extension that fills job application forms from your profile, saved answers and resume. Never submits.",
   "license": "MIT",
