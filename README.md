@@ -57,6 +57,7 @@ To open the settings later, click the ApplyFill icon in the toolbar (pin it from
 ### About the free AI
 
 - One Fill click makes **at most 1 AI request**, and only when a question has no profile answer and no saved answer.
+- AI answers are always in English (even on forms in other languages), short (1 to 3 sentences) and in basic English.
 - Free Gemini allows about 20 requests a day per model, and ApplyFill moves through several models. For job applications, that's plenty.
 - When the free limit is used up, the panel says so. Fill the rest by hand, or try again the next day.
 - **OpenRouter** (optional, also free) is a fallback: add a key from [openrouter.ai/keys](https://openrouter.ai/keys) on the AI tab.

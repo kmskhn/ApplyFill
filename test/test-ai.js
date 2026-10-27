@@ -12,6 +12,7 @@ test("the prompt has no email, phone, address or EEO answers; dates stay", () =>
   assert.match(prompt, /Built React dashboards/);
   assert.match(prompt, /"Why Acme\?"/);
   assert.match(system, /Never invent/);
+  assert.match(system, /every answer in English/);
 });
 
 test("checkAnswers keeps only usable answers", () => {
