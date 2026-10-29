@@ -52,10 +52,18 @@
     { cat: "criminal", re: /\b(criminal|convict\w*|felony)\b/, key: null },
   ];
 
+  // "I identify as": Man / Woman / Non-binary. The options say it is about gender.
+  const GENDER_OPTION = /^(man|woman|male|female|non binary|nonbinary)$/;
+
   function sensitiveCategory(field) {
     const label = normalize(field.label);
+    const byLabel = SENSITIVE.find((item) => item.re.test(label));
 
-    return SENSITIVE.find((item) => item.re.test(label)) || null;
+    if (byLabel) return byLabel;
+
+    const genders = (field.options || []).filter((option) => GENDER_OPTION.test(normalize(option.label))).length;
+
+    return genders >= 2 ? SENSITIVE[0] : null;
   }
 
   // ---------- options ----------
@@ -279,6 +287,9 @@
   // A range in the question itself first ("Expected salary (range: €60k-€80k)"), then the job post.
   const jobSalary = (p, f, job = {}) => topSalary(f.label, p.salary_expectation) || topSalary(job.text, p.salary_expectation);
 
+  // "Salary (number format without special characters)": digits only, like a number field.
+  const wantsDigits = (f) => f.kind === "number" || /\b(number format|numbers? only|digits? only|only (numbers|digits)|without (special characters|currency|symbols)|no (special characters|currency|symbols))\b/.test(normalize(f.label));
+
   /*
    * Each rule: test(label, field, hay) -> true when it applies. value(profile, field, label, job) -> answer
    * (null = this rule has no answer: go on). kinds: "typed" | "choice" | "any" | "file".
@@ -342,9 +353,9 @@
       value: (p, f, l, job) => {
         const top = jobSalary(p, f, job);
 
-        if (top) return f.kind === "number" ? String(top.value) : top.text;
+        if (top) return wantsDigits(f) ? String(top.value) : top.text;
 
-        return f.kind === "number" ? String(p.salary_expectation || "").replace(/[^\d.]/g, "") || null : p.salary_expectation;
+        return wantsDigits(f) ? String(p.salary_expectation || "").replace(/[^\d]/g, "") || null : p.salary_expectation;
       },
     },
 

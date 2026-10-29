@@ -102,3 +102,10 @@ test("reading a PDF needs Gemini and sends the file inline", async () => {
   assert.equal(calls[0].body.contents[0].parts[0].inline_data.mime_type, "application/pdf");
   await assert.rejects(ai.createAi({ keys: { openrouter: "or" } }).readResume({ base64: "UERG" }), /needs Gemini/);
 });
+
+test("dates from AI must be YYYY-MM-DD; the prompt says what day it is", () => {
+  const fields = [{ id: "d1", kind: "date", label: "Earliest start date" }, { id: "d2", kind: "date", label: "Start" }];
+
+  assert.deepEqual(ai.checkAnswers(fields, { answers: [{ id: "d1", value: "2026-12-01" }, { id: "d2", value: "1 month after offer" }] }), { d1: "2026-12-01" });
+  assert.match(ai.buildPrompt({ fields, today: "2026-10-30" }).prompt, /"today": "2026-10-30"/);
+});

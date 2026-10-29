@@ -117,3 +117,16 @@ test("salary: top of the job's range, else the profile default", () => {
   // Range only in the label.
   assert.equal(ask("text", "Expected salary (range for this role: CHF 100'000 - 120'000)", "").value, "CHF 120,000");
 });
+
+test("'I identify as' with Man / Woman options is a gender question: never AI", () => {
+  const result = plan("select", "I identify as", ["Man", "Woman", "Non-binary", "Prefer not to say"]);
+
+  assert.deepEqual(result, { source: "profile", value: "Prefer not to say" });
+});
+
+test("salary asked as 'number format without special characters': digits only", () => {
+  const label = "Please tell us your salary expectations (annual gross salary, number format without special characters)";
+
+  assert.equal(plan("text", label).value, "75000");
+  assert.equal(match.classify(field("text", label), PROFILE, () => null, { text: "Salary: €60,000 - €80,000" }).value, "80000");
+});

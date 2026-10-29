@@ -48,6 +48,16 @@ test("text is cut to maxlength", async () => {
   assert.equal(field.el.value, "12345");
 });
 
+test("date and number inputs: only values they accept, else left for you", async () => {
+  const { doc } = dom(`<label>Start <input id="d" type="date"></label><label>Years <input id="n" type="number"></label>`);
+  const [date, number] = scan.scan(doc);
+
+  assert.equal(await fill.fillField(date, "1 month after offer"), false);
+  assert.equal(await fill.fillField(number, "about 6"), false);
+  assert.equal(await fill.fillField(date, "2026-12-01"), true);
+  assert.equal(await fill.fillField(number, "6"), true);
+});
+
 test("select, radio, checkbox group and yes/no buttons", async () => {
   const { doc } = dom(`<form>
     <label>Country <select><option value="">Select</option><option value="de">Germany</option><option value="in">India</option></select></label>

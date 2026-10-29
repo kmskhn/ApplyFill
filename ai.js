@@ -73,15 +73,16 @@
     "- Yes/no questions about skills or experience: answer from the resume. Questions about preferences (office days, travel, relocation, remote work, notice): answer from the profile and its ai_notes; if nothing fits, \"\".",
     '- Write every answer in English, even when the form or job page is in another language. Questions with "options": still return the option text exactly as given.',
     "- Free-text questions: first person, basic everyday English. Short common words, short sentences, no fancy words, buzzwords or flattery. 1 to 3 short sentences unless the question asks for a minimum length, never more than max_length characters. Use real projects and skills from the resume that fit this job and company.",
-    '- Fields of kind "number": digits only.',
+    '- Fields of kind "number": digits only. Fields of kind "date": YYYY-MM-DD, counted from "today" (e.g. "1 month after offer" -> today plus 1 month).',
     '- Never answer questions about gender, race, ethnicity, disability, veteran status, sexual orientation, religion, age or nationality: return "".',
     '- Never agree to terms, consents or certifications: return "".',
     "",
     'Return JSON only: {"answers":[{"id":"<question id>","value":"<answer>"}]}',
   ].join("\n");
 
-  function buildPrompt({ profile = {}, resumeText = "", job = {}, fields = [] }) {
+  function buildPrompt({ profile = {}, resumeText = "", job = {}, fields = [], today = new Date().toISOString().slice(0, 10) }) {
     const input = {
+      today,
       candidate: publicProfile(profile),
       resume: redact(resumeText, profile).slice(0, 12000),
       job: { page_title: job.title || "", site: job.host || "", text: String(job.text || "").slice(0, 6000) },
@@ -152,6 +153,7 @@
       let text = (Array.isArray(value) ? value.join(", ") : String(value)).trim();
 
       if (field.kind === "number") text = text.replace(/[^\d.]/g, "");
+      if (field.kind === "date" && !/^\d{4}-\d{2}-\d{2}$/.test(text)) continue;
       if (field.max_length) text = text.slice(0, field.max_length).trim();
 
       if (text) out[field.id] = text;
@@ -331,7 +333,7 @@
     async function answerFields(input) {
       if (!input.fields?.length) return { answers: {} };
 
-      const { data, provider, model } = await ask(buildPrompt(input));
+      const { data, provider, model } = await ask(buildPrompt({ today: now().toISOString().slice(0, 10), ...input }));
 
       return { answers: checkAnswers(input.fields, data), provider, model };
     }

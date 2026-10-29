@@ -300,8 +300,13 @@
     leave(el);
   }
 
+  // Date and number inputs drop any other text (Chrome logs a warning): leave those fields to you.
+  const FORMAT = { date: /^\d{4}-\d{2}-\d{2}$/, number: /^-?\d+(\.\d+)?$/ };
+
   /** value: text, option label, array of labels, true/false, or "resume". */
   async function fillField(field, value, { resume } = {}) {
+    if (FORMAT[field.kind] && !FORMAT[field.kind].test(String(value).trim())) return false;
+
     switch (field.kind) {
       case "select":
         fillSelect(field, value);
