@@ -37,7 +37,7 @@ const SCHEMA = [
       ["years_experience", "Years of experience", "number"],
       ["notice_period", "Notice period", "text", "30 days"],
       ["start_date", "Earliest start date", "text", "1 month after offer, or 2026-12-01"],
-      ["salary_expectation", "Salary expectation", "text", "EUR 75,000 a year"],
+      ["salary_expectation", "Salary expectation (used when the job shows no range)", "text", "EUR 75,000 a year"],
       ["how_heard", '"How did you hear about us?"', "text", "Company website"],
     ],
   },

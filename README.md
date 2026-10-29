@@ -17,7 +17,7 @@ It's free: no account, no server, no card. Your data stays in your browser.
 | Color | Meaning |
 | --- | --- |
 | green | from your profile or a saved answer |
-| yellow | AI answer, or a legal question (sponsorship, work permit): check it |
+| yellow | AI answer, a legal question (sponsorship, work permit), or a salary from the job's range: check it |
 | red | yours to do: consent boxes, personal questions without a saved answer, other files, or a field it couldn't fill |
 | grey | you had already filled it: left as is |
 
@@ -98,6 +98,9 @@ To open the settings later, click the ApplyFill icon in the toolbar (pin it from
 - **Legal yes/no questions come from your profile but show yellow.** These are sponsorship and right-to-work questions.
   - "Authorized to work in X?" is Yes only for countries listed in "Countries you can already work in".
   - A question that names no country is taken to mean the job's country. If you need sponsorship, the answer is "No".
+- **Expected salary: the top of the job's range.** If the question or the job post shows a range ("€60,000 - €80,000"), ApplyFill enters the top (€80,000), in yellow. No range: your "Salary expectation" from the profile.
+  - Several ranges (one per country): the one in your profile's currency wins.
+  - The job post must be on the same page as the form. If the form has a page of its own, your default is used.
 - **Resume first.** The resume is uploaded before anything else, so the site's own resume reader can't overwrite the answers. ApplyFill waits until the page stops changing.
   - Ashby's "Autofill from resume" box is skipped.
 - **Free only.** It uses Gemini's free tier, then OpenRouter's free models. A model that hits its daily limit is skipped until the limit resets.

@@ -481,7 +481,8 @@
     return {
       title: doc.title || "",
       host: doc.location?.hostname || "",
-      text: best.slice(0, 6000),
+      // Whole text: the salary range is often at the end. ai.js cuts what it sends.
+      text: best,
     };
   }
 

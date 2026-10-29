@@ -92,3 +92,28 @@ test("pickOption", () => {
   assert.equal(match.pickOption(opts("Berlin, Germany", "Bern, Switzerland"), "Berlin").label, "Berlin, Germany");
   assert.equal(match.pickOption(opts("Red", "Blue"), "Green"), null);
 });
+
+test("salary: top of the job's range, else the profile default", () => {
+  const ask = (kind, label, text, profile = PROFILE) => match.classify(field(kind, label), profile, () => null, { text });
+
+  assert.deepEqual(ask("text", "Expected salary", "Salary range: €60,000 - €80,000 a year.").value, "€80,000");
+  assert.equal(ask("text", "Expected salary", "Salary range: €60,000 - €80,000 a year.").source, "check");
+  assert.equal(ask("number", "Salary expectation", "Base pay $120k–$150k").value, "150000");
+  assert.equal(ask("text", "Gehalt", "60.000 - 75.000 EUR brutto").value, "EUR 75,000");
+  assert.equal(ask("text", "Expected salary", "EUR 60-80k").value, "EUR 80,000");
+  assert.equal(ask("text", "Expected salary", "The salary for this role is 90,000 to 110,000 per year.").value, "110,000");
+
+  // Several countries: the profile's currency (EUR) wins.
+  assert.equal(ask("text", "Expected salary", "US: $150,000 - $180,000. Germany: €90,000 - €110,000.").value, "€110,000");
+
+  // No range: the default, green.
+  for (const text of ["We work 2019 - 2021 style.", "Team of 10,000 - 50,000 users.", "$50 - $70 per hour", ""]) {
+    const result = ask("text", "Expected salary", text);
+
+    assert.deepEqual([result.value, result.source], ["EUR 75,000", "rule"], text);
+  }
+
+  assert.equal(ask("number", "Expected salary", "").value, "75000");
+  // Range only in the label.
+  assert.equal(ask("text", "Expected salary (range for this role: CHF 100'000 - 120'000)", "").value, "CHF 120,000");
+});

@@ -1,7 +1,7 @@
 /*
  * Which answer does a field get, and from where?
  *
- *   classify(field, profile, lookupMemory) -> { source, value, note }
+ *   classify(field, profile, lookupMemory, job) -> { source, value, note }
  *
  * Order (first hit wins):
  *   1. consent / "I agree" / marketing boxes  -> never filled ("consent", red)
@@ -228,10 +228,61 @@
 
   const techWords = (profile) => (profile.technologies || []).map((tech) => normalize(tech)).filter((tech) => tech.length > 1);
 
+  // ---------- salary range in the job post ----------
+
+  const CURRENCY = "[$€£¥₹]|\\b(?:usd|eur|gbp|chf|cad|aud|nzd|sgd|inr|pln|sek|nok|dkk|czk|aed|jpy)\\b";
+  // "80,000", "80.000", "100'000", "80k", "80.5k". Plain spaces are not thousands separators: "80,000 100 people".
+  const AMOUNT = "(?<![\\d.,])(\\d{1,3}(?:[,.'’\\u00a0\\u202f]\\d{3})+|\\d+(?:[.,]\\d+)?)\\s*(k\\b)?";
+  const SALARY_RANGE = new RegExp(`(${CURRENCY})?\\s*${AMOUNT}\\s*(${CURRENCY})?\\s*(?:-|–|—|to|bis|and)\\s*(${CURRENCY})?\\s*${AMOUNT}\\s*(${CURRENCY})?`, "gi");
+  const SALARY_WORDS = /\b(salary|salaries|compensation|pay|base|range|ote|remuneration|wage|gehalt)\b/i;
+  const SYMBOL_CODE = { $: "usd", "€": "eur", "£": "gbp", "¥": "jpy", "₹": "inr" };
+
+  const currencyCode = (text) => {
+    const found = String(text || "").match(new RegExp(CURRENCY, "i"))?.[0] || "";
+
+    return SYMBOL_CODE[found] || found.toLowerCase();
+  };
+
+  function amount(digits, k) {
+    const n = /^\d{1,3}([,.'’  ]\d{3})+$/.test(digits) ? Number(digits.replace(/\D/g, "")) : Number(digits.replace(",", "."));
+
+    return k ? n * 1000 : n;
+  }
+
+  /**
+   * The top of a salary range in a text: "€60,000 - €80,000" -> { value: 80000, text: "€80,000" }. Or null.
+   * Without a currency the text before it must say salary, pay, ... ("2019 - 2021" is not a salary).
+   * Several ranges (one per country): the one in `currency` (e.g. the profile's "EUR 75,000") wins, else the first.
+   */
+  function topSalary(text, currency = "") {
+    const found = [];
+
+    for (const m of String(text || "").matchAll(SALARY_RANGE)) {
+      const cur = m[5] || m[8] || m[1] || m[4] || "";
+      const high = amount(m[6], m[7]);
+      // "€60-80k": the k is for both.
+      const low = amount(m[2], m[3]) * (m[7] && !m[3] ? 1000 : 1);
+      const before = text.slice(Math.max(0, m.index - 100), m.index);
+
+      if (high <= low || (cur ? high < 1000 : high < 10000 || !SALARY_WORDS.test(before))) continue;
+
+      const number = high.toLocaleString("en-US");
+
+      found.push({ value: high, currency: currencyCode(cur), text: !cur ? number : /^[a-z]+$/i.test(cur) ? `${cur.toUpperCase()} ${number}` : `${cur}${number}` });
+    }
+
+    const mine = currencyCode(currency);
+
+    return found.find((one) => mine && one.currency === mine) || found[0] || null;
+  }
+
+  // A range in the question itself first ("Expected salary (range: €60k-€80k)"), then the job post.
+  const jobSalary = (p, f, job = {}) => topSalary(f.label, p.salary_expectation) || topSalary(job.text, p.salary_expectation);
+
   /*
-   * Each rule: test(label, field, hay) -> true when it applies. value(profile, field, label) -> answer
+   * Each rule: test(label, field, hay) -> true when it applies. value(profile, field, label, job) -> answer
    * (null = this rule has no answer: go on). kinds: "typed" | "choice" | "any" | "file".
-   * check: true = a guess about a legal question, shown yellow.
+   * check: true = a guess about a legal question, shown yellow. A function -> a note to show yellow with, or "".
    */
   const RULES = [
     { key: "over_18", kinds: "any", test: (l) => /\b(over|at least|older than|above) (the age of )?18\b|\b18 (years )?(of age|or older)\b/.test(l), value: (p) => p.over_18 ?? true },
@@ -286,7 +337,15 @@
       key: "salary",
       kinds: "typed",
       test: (l) => /\b(salary|compensation|remuneration|pay|wage|ctc|gehalt)\b/.test(l) && !/\bcurrent\b/.test(l),
-      value: (p, f) => (f.kind === "number" ? String(p.salary_expectation || "").replace(/[^\d.]/g, "") || null : p.salary_expectation),
+      // The top of the job's own range if the page shows one, else your default.
+      check: (p, f, l, job) => (jobSalary(p, f, job) ? "Top of the job's salary range: check it" : ""),
+      value: (p, f, l, job) => {
+        const top = jobSalary(p, f, job);
+
+        if (top) return f.kind === "number" ? String(top.value) : top.text;
+
+        return f.kind === "number" ? String(p.salary_expectation || "").replace(/[^\d.]/g, "") || null : p.salary_expectation;
+      },
     },
 
     {
@@ -343,8 +402,8 @@
     return true;
   }
 
-  /** The first rule that applies, with its value made to fit the field. Or null. */
-  function ruleFor(field, profile = {}) {
+  /** The first rule that applies, with its value made to fit the field. Or null. job: { text } of the page. */
+  function ruleFor(field, profile = {}, job = {}) {
     const label = normalize(field.label);
     const hay = normalize([field.label, field.name, field.idAttr, field.placeholder, field.autocomplete].filter(Boolean).join(" "));
 
@@ -353,7 +412,7 @@
 
       if (!rule.test(label, field, hay, profile)) continue;
 
-      const raw = rule.value(profile, field, label);
+      const raw = rule.value(profile, field, label, job);
 
       // The rule knows the question but the profile has no answer: stop here, the AI can't know either
       // for facts like email or phone. Only these few go on to the next step.
@@ -367,7 +426,9 @@
 
       if (value === null) return null;
 
-      return { key: rule.key, value, check: Boolean(rule.check) };
+      const note = typeof rule.check === "function" ? rule.check(profile, field, label, job) : rule.check ? "Legal question: check it" : "";
+
+      return { key: rule.key, value, check: Boolean(note), note };
     }
 
     return null;
@@ -403,10 +464,10 @@
   }
 
   /**
-   * The plan for one field. lookupMemory(field) -> label/text or null.
+   * The plan for one field. lookupMemory(field) -> label/text or null. job: { text } of the page.
    * Returns { source, value, note } where source is consent | sensitive | profile | rule | check | memory | manual | ai.
    */
-  function classify(field, profile = {}, lookupMemory = () => null) {
+  function classify(field, profile = {}, lookupMemory = () => null, job = {}) {
     if (isConsent(field)) return { source: "consent", value: null, note: "Consent: tick it yourself" };
 
     const age = RULES[0];
@@ -432,9 +493,9 @@
       return { source: "sensitive", value: null, note: "Personal question: you decide" };
     }
 
-    const rule = ruleFor(field, profile);
+    const rule = ruleFor(field, profile, job);
 
-    if (rule && rule.value !== null) return { source: rule.check ? "check" : "rule", value: rule.value, key: rule.key, note: rule.check ? "Legal question: check it" : "" };
+    if (rule && rule.value !== null) return { source: rule.check ? "check" : "rule", value: rule.value, key: rule.key, note: rule.note };
 
     const saved = lookupMemory(field);
 
@@ -447,7 +508,7 @@
     return { source: "ai", value: null };
   }
 
-  AF.match = { classify, ruleFor, pickOption, fitValue, valueToText, isConsent, sensitiveCategory, isChoice, isTyped, range, countriesIn };
+  AF.match = { classify, ruleFor, pickOption, fitValue, valueToText, isConsent, sensitiveCategory, isChoice, isTyped, range, countriesIn, topSalary };
 
   if (typeof module !== "undefined" && module.exports) module.exports = AF.match;
 })(globalThis);

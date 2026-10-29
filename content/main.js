@@ -60,7 +60,7 @@
       else rows.unshift({ field: uploaded, source: "rule", value: "resume" });
     }
 
-    function plan(fields, { profile, answers, resume }) {
+    function plan(fields, { profile, answers, resume }, job) {
       return fields.map((field) => {
         if (field.kind === "file" && isResumeField(field, profile)) {
           if (!scanner.isEmpty(field)) return { field, source: "filled", value: scanner.currentValue(field) };
@@ -70,7 +70,7 @@
 
         if (!scanner.isEmpty(field)) return { field, source: "filled", value: scanner.currentValue(field) };
 
-        return { field, ...match.classify(field, profile, (one) => memory.lookup(answers, one)) };
+        return { field, ...match.classify(field, profile, (one) => memory.lookup(answers, one), job) };
       });
     }
 
@@ -87,7 +87,7 @@
       }
     }
 
-    async function askAi(rows, settings) {
+    async function askAi(rows, settings, job) {
       const pending = rows.filter((row) => row.source === "ai");
 
       if (pending.length === 0) return;
@@ -105,7 +105,7 @@
 
       say(`Asking AI about ${pending.length} question${pending.length > 1 ? "s" : ""}…`);
 
-      const reply = await ask({ type: "ai-answer", fields: pending.map((row) => scanner.toPublic(row.field)), job: scanner.jobContext(doc) });
+      const reply = await ask({ type: "ai-answer", fields: pending.map((row) => scanner.toPublic(row.field)), job });
 
       if (!reply?.ok) {
         pending.forEach((row) => Object.assign(row, { source: "manual", note: reply?.error || "AI failed" }));
@@ -146,7 +146,9 @@
 
         if (uploaded) fields = scanner.scan(doc);
 
-        const rows = plan(fields, data);
+        // The job post: the AI reads it, and a salary range in it sets the expected salary.
+        const job = scanner.jobContext(doc);
+        const rows = plan(fields, data, job);
 
         if (uploaded) markUploaded(rows, uploaded, data.profile);
 
@@ -156,7 +158,7 @@
           if (["rule", "profile", "memory", "check"].includes(row.source) && row.value !== null) await fillRow(row, data.resume);
         }
 
-        const aiError = await askAi(rows, data.settings);
+        const aiError = await askAi(rows, data.settings, job);
 
         for (const row of rows) if (COLOR[row.source]) filler.outline(row.field, COLOR[row.source]);
 
@@ -185,13 +187,14 @@
     async function save({ quiet = false } = {}) {
       const data = await load();
       const fields = scanner.scan(doc);
+      const job = scanner.jobContext(doc);
       let answers = data.answers;
       let count = 0;
 
       for (const field of fields) {
         if (field.kind === "file") continue;
 
-        const source = match.classify(field, data.profile, () => null).source;
+        const source = match.classify(field, data.profile, () => null, job).source;
 
         if (NOT_SAVED.has(source)) continue;
 
